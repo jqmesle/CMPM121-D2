@@ -199,3 +199,56 @@ canvas.addEventListener("lostpointercapture", (event) => {
 document.addEventListener("keydown", (event) => {
   if (event.key === "Escape") cancelGesture();
 });
+
+const toolHeading = document.createElement("h3");
+toolHeading.textContent = "Drawing Tools";
+
+const toolButtons = document.createElement("div");
+toolButtons.className = "tool-buttons";
+
+function showTools() {
+  toolButtons.replaceChildren();
+
+  for (const tool of tools) {
+    const button = document.createElement("button");
+    button.textContent = tool.name;
+    button.classList.toggle("selected", tool === selectedTool);
+    button.addEventListener("click", () => {
+      cancelGesture();
+      selectedTool = tool;
+      showTools();
+    });
+    toolButtons.append(button);
+  }
+}
+
+showTools();
+app.append(toolHeading, toolButtons);
+
+const customHeading = document.createElement("h3");
+customHeading.textContent = "Create a custom sticker";
+
+const nameInput = document.createElement("input");
+nameInput.placeholder = "Sticker name";
+
+const stickerInput = document.createElement("input");
+stickerInput.placeholder = "Emoji or text";
+
+const createButton = document.createElement("button");
+createButton.textContent = "Create Sticker";
+
+createButton.addEventListener("click", () => {
+  const name = nameInput.value.trim();
+  const text = stickerInput.value.trim();
+  if (name === "" || text === "") return; // cancelled/empty: no tool, no document change
+
+  const newTool: Tool = { name, kind: "sticker", text, size: 40 };
+  tools.push(newTool);
+  selectedTool = newTool;
+
+  nameInput.value = "";
+  stickerInput.value = "";
+  showTools();
+});
+
+app.append(customHeading, nameInput, stickerInput, createButton);
