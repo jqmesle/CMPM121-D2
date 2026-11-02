@@ -134,3 +134,68 @@ function cancelGesture() {
   endGesture();
   render();
 }
+
+canvas.addEventListener("pointerdown", (event) => {
+  if (event.button !== 0 || currentPointerId !== null) return;
+
+  const start = getPointerPos(event);
+  if (selectedTool.kind === "marker") {
+    currentStroke = {
+      points: [start],
+      color: selectedTool.color ?? "black",
+      width: selectedTool.width ?? 4,
+    };
+  } else {
+    currentSticker = {
+      position: start,
+      text: selectedTool.text ?? "",
+      size: selectedTool.size ?? 40,
+    };
+  }
+
+  currentPointerId = event.pointerId;
+  canvas.setPointerCapture(event.pointerId);
+  render();
+});
+
+canvas.addEventListener("pointermove", (event) => {
+  if (event.pointerId !== currentPointerId) return;
+
+  const pos = getPointerPos(event);
+  if (currentStroke !== null) {
+    currentStroke.points.push(pos);
+  } else if (currentSticker !== null) {
+    currentSticker.position = pos;
+  }
+  render();
+});
+
+canvas.addEventListener("pointerup", (event) => {
+  if (event.pointerId !== currentPointerId) return;
+
+  if (currentStroke !== null) {
+    const stroke = currentStroke;
+    addCommand({ draw: (target) => drawStroke(stroke, target) });
+  }
+  if (currentSticker !== null) {
+    const sticker = currentSticker;
+    addCommand({ draw: (target) => drawSticker(sticker, target) });
+  }
+
+  endGesture();
+  render();
+});
+
+canvas.addEventListener("pointercancel", (event) => {
+  if (event.pointerId !== currentPointerId) return;
+
+  cancelGesture();
+});
+
+canvas.addEventListener("lostpointercapture", (event) => {
+  if (event.pointerId === currentPointerId) cancelGesture();
+});
+
+document.addEventListener("keydown", (event) => {
+  if (event.key === "Escape") cancelGesture();
+});
