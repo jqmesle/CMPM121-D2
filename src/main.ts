@@ -300,3 +300,44 @@ clearButton.addEventListener("click", () => {
   updateHistoryButtons();
   render();
 });
+
+const exportButton = document.createElement("button");
+exportButton.textContent = "Export PNG";
+exportButton.classList.add("primary");
+exportButton.addEventListener("click", () => {
+  const scale = 2;
+  const exportCanvas = document.createElement("canvas");
+  exportCanvas.width = canvas.width * scale;
+  exportCanvas.height = canvas.height * scale;
+
+  const exportCtx = exportCanvas.getContext("2d");
+  if (!exportCtx) return;
+
+  exportCtx.save();
+  exportCtx.fillStyle = "white";
+  exportCtx.fillRect(0, 0, exportCanvas.width, exportCanvas.height);
+  exportCtx.scale(scale, scale);
+  replay(exportCtx);
+  exportCtx.restore();
+
+  exportCanvas.toBlob((blob) => {
+    if (!blob) return;
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = "drawing.png";
+    link.click();
+    URL.revokeObjectURL(url);
+  }, "image/png");
+});
+
+actionButtons.append(
+  redrawButton,
+  undoButton,
+  redoButton,
+  clearButton,
+  exportButton,
+);
+app.append(actionButtons);
+
+updateHistoryButtons();
