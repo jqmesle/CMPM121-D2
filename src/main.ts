@@ -252,3 +252,51 @@ createButton.addEventListener("click", () => {
 });
 
 app.append(customHeading, nameInput, stickerInput, createButton);
+
+const actionButtons = document.createElement("div");
+actionButtons.className = "action-buttons";
+
+function updateHistoryButtons() {
+  undoButton.disabled = commands.length === 0;
+  redoButton.disabled = redoStack.length === 0;
+}
+
+const redrawButton = document.createElement("button");
+redrawButton.textContent = "Redraw";
+redrawButton.addEventListener("click", () => {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  setTimeout(render, 500);
+});
+
+const undoButton = document.createElement("button");
+undoButton.textContent = "Undo";
+undoButton.addEventListener("click", () => {
+  const command = commands.pop();
+  if (command) {
+    redoStack.push(command);
+    updateHistoryButtons();
+    render();
+  }
+});
+
+const redoButton = document.createElement("button");
+redoButton.textContent = "Redo";
+redoButton.addEventListener("click", () => {
+  const command = redoStack.pop();
+  if (command) {
+    commands.push(command);
+    updateHistoryButtons();
+    render();
+  }
+});
+
+const clearButton = document.createElement("button");
+clearButton.textContent = "Clear";
+clearButton.classList.add("danger");
+clearButton.addEventListener("click", () => {
+  cancelGesture();
+  redoStack.length = 0;
+  commands.length = 0;
+  updateHistoryButtons();
+  render();
+});
